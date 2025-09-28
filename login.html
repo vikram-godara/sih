@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuralRX - Sign In</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary: #28a745;
+            --primary-dark: #218838;
+            --primary-light: #d4edda;
+            --secondary: #ff9933;
+            --accent: #007bff;
+            --text: #343a40;
+            --text-light: #6c757d;
+            --background: #ffffff;
+            --surface: #f8f9fa;
+            --card: #ffffff;
+            --border: #e9ecef;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            --transition: all 0.3s ease;
+            --radius: 12px;
+            --header-height: 80px;
+            --max-width: 1200px;
+            --gradient-primary: linear-gradient(135deg, var(--primary), #2ecc71);
+            --gradient-secondary: linear-gradient(135deg, var(--secondary), #ffb347);
+            --error: #e74c3c;
+            --success: #2ecc71;
+        }
+
+        .dark-mode {
+            --primary: #3dd56d;
+            --primary-dark: #2bb459;
+            --primary-light: #1a3a27;
+            --text: #e0e0e0;
+            --text-light: #a0a0a0;
+            --background: #121212;
+            --surface: #1e1e1e;
+            --card: #1e1e1e;
+            --border: #2d2d2d;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            --error: #e74c3c;
+            --success: #27ae60;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-color: var(--background);
+            transition: background-color 0.3s ease;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        .container {
+            width: 90%;
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn:hover::before {
+            opacity: 1;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--gradient-secondary);
+        }
+
+        .btn-secondary:hover {
+            box-shadow: 0 10px 25px rgba(255, 153, 51, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .btn-icon {
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border-radius: 50%;
+        }
+
+        /* Header Styles */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+        }
+
+        .dark-mode header {
+            background-color: rgba(30, 30, 30, 0.95);
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: var(--primary);
+            gap: 12px;
+        }
+
+        .logo-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            object-fit: cover;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: var(--transition);
+        }
+
+        .logo:hover .logo-image {
+            transform: scale(1.05);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+        }
+
+        .nav-links a {
+            font-weight: 500;
+            position: relative;
+            padding: 8px 0;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background: var(--gradient-primary);
+            transition: var(--transition);
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            width: 50px;
+            height: 26px;
+            background: var(--border);
+            border-radius: 50px;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 0 3px;
+        }
+
+        .theme-toggle::before {
+            content: '\f186';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            left: 6px;
+            color: var(--text-light);
+            font-size: 12px;
+            z-index: 1;
+        }
+
+        .theme-toggle::after {
+            content: '\f185';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 6px;
+            color: var(--text-light);
+            font-size: 12px;
+            z-index: 1;
+        }
+
+        .theme-toggle-handle {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            left: 3px;
+            transition: var(--transition);
+            z-index: 2;
+        }
+
+        .dark-mode .theme-toggle-handle {
+            left: calc(100% - 23px);
+        }
+
+        .dark-mode .theme-toggle {
+            background: var(--primary);
+        }
+
+        /* Login Section */
+        .login-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 0 80px;
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(255, 153, 51, 0.05) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-section::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: var(--gradient-primary);
+            opacity: 0.05;
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .login-section::after {
+            content: '';
+            position: absolute;
+            bottom: -100px;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            background: var(--gradient-secondary);
+            opacity: 0.05;
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+            margin: 0 auto;
+        }
+
+        .login-card {
+            background-color: var(--card);
+            padding: 50px 40px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient-primary);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--text), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-header p {
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            background-color: var(--background);
+            color: var(--text);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+        }
+
+        .form-control.error {
+            border-color: var(--error);
+        }
+
+        .form-control.success {
+            border-color: var(--success);
+        }
+
+        .form-message {
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .form-message.error {
+            color: var(--error);
+            display: block;
+        }
+
+        .form-message.success {
+            color: var(--success);
+            display: block;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 45px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 30px 0;
+            color: var(--text-light);
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: var(--border);
+        }
+
+        .divider span {
+            padding: 0 15px;
+            font-size: 0.9rem;
+        }
+
+        .google-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 15px;
+            background-color: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .google-btn:hover {
+            background-color: var(--primary-light);
+            border-color: var(--primary);
+        }
+
+        .google-btn i {
+            color: #DB4437;
+            font-size: 1.2rem;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .login-links {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .login-links a {
+            color: var(--primary);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .login-links a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Alert Messages */
+        .alert {
+            padding: 15px;
+            border-radius: var(--radius);
+            margin-bottom: 20px;
+            font-weight: 500;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-success {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            border: 1px solid var(--primary);
+        }
+
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .dark-mode .alert-error {
+            background-color: #3c1a1d;
+            color: #f8d7da;
+            border: 1px solid #721c24;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: var(--surface);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            display: none;
+        }
+
+        .admin-panel h3 {
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .admin-panel .form-group {
+            margin-bottom: 15px;
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--surface);
+            color: var(--text);
+            padding: 40px 0 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 50px;
+            margin-bottom: 30px;
+        }
+
+        .footer-column h3 {
+            font-size: 1.3rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .footer-column p {
+            margin-bottom: 20px;
+            color: var(--text-light);
+        }
+
+        .footer-column ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-column ul li a {
+            color: var(--text-light);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .footer-column ul li a:hover {
+            color: var(--primary);
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-icons a {
+            width: 45px;
+            height: 45px;
+            background-color: var(--card);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 1.2rem;
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .social-icons a:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            color: var(--text-light);
+            font-size: 0.95rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .nav-links {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .login-card {
+                padding: 40px 30px;
+            }
+            
+            .login-header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .login-links {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text);
+            cursor: pointer;
+        }
+
+        @media (max-width: 992px) {
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .nav-actions .btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header & Navigation -->
+        <header>
+        <div class="container">
+            <nav class="navbar">
+                <a href="index.html" class="logo">
+                    <!-- Added a professional healthcare logo image -->
+                    <img src="img.jpeg" alt="NeuralRX Logo" class="logo-image">
+                    NeuralRX
+                </a>
+                
+                <ul class="nav-links">
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#how-it-works">How It Works</a></li>
+                    <li><a href="#platforms">Platforms</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+                
+                <div class="nav-actions">
+                    <div class="theme-toggle" id="themeToggle">
+                        <div class="theme-toggle-handle"></div>
+                    </div>
+                    <a href="#" class="btn">Chat Now</a>
+                    <button class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <a href="login.html" class="btn">Login</a>
+                    <button class="mobile-menu-btn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Login Section -->
+    <section class="login-section">
+        <div class="container">
+            <div class="login-container">
+                <div class="login-card">
+                    <div class="login-header">
+                        <h1>Welcome to NeuralRX</h1>
+                        <p>Sign in to continue</p>
+                    </div>
+                    
+                    <!-- Alert Messages -->
+                    <div id="alertMessage" class="alert"></div>
+                    
+                    <button class="google-btn" id="googleSignIn">
+                        <i class="fab fa-google"></i>
+                        Continue with Google
+                    </button>
+                    
+                    <div class="divider">
+                        <span>OR</span>
+                    </div>
+                    
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" class="form-control" placeholder="you@example.com" required>
+                            <div class="form-message" id="emailMessage"></div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" class="form-control" placeholder="********" required>
+                            <button type="button" class="password-toggle" id="passwordToggle">
+                                <i class="far fa-eye"></i>
+                            </button>
+                            <div class="form-message" id="passwordMessage"></div>
+                        </div>
+                        
+                        <button type="submit" class="btn login-btn" id="submitBtn">
+                            Sign in
+                        </button>
+                    </form>
+                    
+                    <div class="login-links">
+                        <a href="#" id="forgotPassword">Forgot password?</a>
+                        <a href="#" id="toggleSignUp">Need an account? Sign up</a>
+                    </div>
+                    
+                    <!-- Admin Panel for Adding Users -->
+                    <!-- <div class="admin-panel" id="adminPanel">
+                        <h3>Admin: Add New User</h3>
+                        <form id="addUserForm">
+                            <div class="form-group">
+                                <label for="newUserEmail">Email</label>
+                                <input type="email" id="newUserEmail" class="form-control" placeholder="newuser@example.com" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="newUserPassword">Password</label>
+                                <input type="password" id="newUserPassword" class="form-control" placeholder="********" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-outline">Add User</button>
+                        </form>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>NeuralRX</h3>
+                    <p>Your trusted AI-powered health assistant providing reliable healthcare guidance for the people of Odisha.</p>
+                    <div class="social-icons">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="index.html#features"><i class="fas fa-arrow-right"></i> Features</a></li>
+                        <li><a href="index.html#how-it-works"><i class="fas fa-arrow-right"></i> How It Works</a></li>
+                        <li><a href="index.html#platforms"><i class="fas fa-arrow-right"></i> Platforms</a></li>
+                        <li><a href="index.html#about"><i class="fas fa-arrow-right"></i> About</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact Us</h3>
+                    <ul>
+                        <li><a href="mailto:support@neuralrx.com"><i class="fas fa-envelope"></i> support@neuralrx.com</a></li>
+                        <li><a href="tel:+919876543210"><i class="fas fa-phone"></i> +91 9876543210</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt"></i> Bhubaneswar, Odisha</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 NeuralRX. All rights reserved. | An initiative for the people of Odisha</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Firebase Configuration
+       const firebaseConfig = {
+  apiKey: "AIzaSyBPOLt_aFNTglZ_UO2M8-4AObLtjiXflHk",
+  authDomain: "vikram-95ef8.firebaseapp.com",
+  projectId: "vikram-95ef8",
+  storageBucket: "vikram-95ef8.firebasestorage.app",
+  messagingSenderId: "977129542877",
+  appId: "1:977129542877:web:fec6a20b7fb5ba26923734",
+  measurementId: "G-3QSSLKFGC5"
+};
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // DOM Elements
+        const loginForm = document.getElementById('loginForm');
+        const addUserForm = document.getElementById('addUserForm');
+        const googleSignIn = document.getElementById('googleSignIn');
+        const forgotPassword = document.getElementById('forgotPassword');
+        const toggleSignUp = document.getElementById('toggleSignUp');
+        const alertMessage = document.getElementById('alertMessage');
+        const adminPanel = document.getElementById('adminPanel');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const emailMessage = document.getElementById('emailMessage');
+        const passwordMessage = document.getElementById('passwordMessage');
+        const passwordToggle = document.getElementById('passwordToggle');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // Check for saved theme preference or respect OS preference
+        if (localStorage.getItem('theme') === 'dark' || 
+            (window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('theme'))) {
+            body.classList.add('dark-mode');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // Password visibility toggle
+        passwordToggle.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            passwordToggle.innerHTML = type === 'password' ? '<i class="far fa-eye"></i>' : '<i class="far fa-eye-slash"></i>';
+        });
+
+        // Form validation
+        function validateEmail(email) {
+            const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        function validatePassword(password) {
+            return password.length >= 6;
+        }
+
+        emailInput.addEventListener('input', () => {
+            if (!validateEmail(emailInput.value)) {
+                emailInput.classList.add('error');
+                emailInput.classList.remove('success');
+                emailMessage.textContent = 'Please enter a valid email address';
+                emailMessage.className = 'form-message error';
+            } else {
+                emailInput.classList.remove('error');
+                emailInput.classList.add('success');
+                emailMessage.textContent = 'Email is valid';
+                emailMessage.className = 'form-message success';
+            }
+        });
+
+        passwordInput.addEventListener('input', () => {
+            if (!validatePassword(passwordInput.value)) {
+                passwordInput.classList.add('error');
+                passwordInput.classList.remove('success');
+                passwordMessage.textContent = 'Password must be at least 6 characters';
+                passwordMessage.className = 'form-message error';
+            } else {
+                passwordInput.classList.remove('error');
+                passwordInput.classList.add('success');
+                passwordMessage.textContent = 'Password is valid';
+                passwordMessage.className = 'form-message success';
+            }
+        });
+
+        // Show Alert Message
+        function showAlert(message, type) {
+            alertMessage.textContent = message;
+            alertMessage.className = `alert alert-${type}`;
+            alertMessage.style.display = 'block';
+            
+            // Hide alert after 5 seconds
+            setTimeout(() => {
+                alertMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        // Set loading state
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="loading"></span> Processing...';
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = isSignUp ? 'Sign up' : 'Sign in';
+            }
+        }
+
+        // Toggle between Sign In and Sign Up
+        let isSignUp = false;
+        toggleSignUp.addEventListener('click', (e) => {
+            e.preventDefault();
+            isSignUp = !isSignUp;
+            
+            if (isSignUp) {
+                document.querySelector('.login-btn').textContent = 'Sign up';
+                toggleSignUp.textContent = 'Already have an account? Sign in';
+                document.querySelector('.login-header h1').textContent = 'Create an Account';
+                document.querySelector('.login-header p').textContent = 'Sign up to get started';
+            } else {
+                document.querySelector('.login-btn').textContent = 'Sign in';
+                toggleSignUp.textContent = 'Need an account? Sign up';
+                document.querySelector('.login-header h1').textContent = 'Welcome to NeuralRX';
+                document.querySelector('.login-header p').textContent = 'Sign in to continue';
+            }
+        });
+
+        // Email/Password Authentication
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            
+            // Validate inputs
+            if (!validateEmail(email)) {
+                showAlert('Please enter a valid email address', 'error');
+                return;
+            }
+            
+            if (!validatePassword(password)) {
+                showAlert('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            setLoading(true);
+            
+            if (isSignUp) {
+                // Sign Up
+                auth.createUserWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed up successfully
+                        const user = userCredential.user;
+                        showAlert('Account created successfully!', 'success');
+                        console.log('User created:', user);
+                        
+                        // Redirect to main page after successful signup
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    })
+                    .catch((error) => {
+                        const errorCode = error.code;
+                        const errorMessage = error.message;
+                        showAlert(errorMessage, 'error');
+                        console.error('Sign up error:', errorCode, errorMessage);
+                    })
+                    .finally(() => {
+                        setLoading(false);
+                    });
+            } else {
+                // Sign In
+                auth.signInWithEmailAndPassword(email, password)
+                    .then((userCredential) => {
+                        // Signed in successfully
+                        const user = userCredential.user;
+                        showAlert('Signed in successfully!', 'success');
+                        console.log('User signed in:', user);
+                        
+                        // Redirect to main page after successful login
+                        setTimeout(() => {
+                            window.location.href = 'index.html';
+                        }, 2000);
+                    })
+                    .catch((error) => {
+                        const errorCode = error.code;
+                        const errorMessage = error.message;
+                        showAlert(errorMessage, 'error');
+                        console.error('Sign in error:', errorCode, errorMessage);
+                    })
+                    .finally(() => {
+                        setLoading(false);
+                    });
+            }
+        });
+
+        // Google Sign In
+        googleSignIn.addEventListener('click', () => {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    // Google sign in successful
+                    const user = result.user;
+                    showAlert('Signed in with Google successfully!', 'success');
+                    console.log('Google sign in:', user);
+                    
+                    // Redirect to main page after successful login
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    showAlert(errorMessage, 'error');
+                    console.error('Google sign in error:', errorCode, errorMessage);
+                });
+        });
+
+        // Forgot Password
+        forgotPassword.addEventListener('click', (e) => {
+            e.preventDefault();
+            const email = prompt('Please enter your email address:');
+            
+            if (email) {
+                if (!validateEmail(email)) {
+                    showAlert('Please enter a valid email address', 'error');
+                    return;
+                }
+                
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        showAlert('Password reset email sent! Check your inbox.', 'success');
+                    })
+                    .catch((error) => {
+                        const errorCode = error.code;
+                        const errorMessage = error.message;
+                        showAlert(errorMessage, 'error');
+                        console.error('Password reset error:', errorCode, errorMessage);
+                    });
+            }
+        });
+
+        // Admin Panel - Add User Manually
+        addUserForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+            
+            if (!validateEmail(email)) {
+                showAlert('Please enter a valid email address', 'error');
+                return;
+            }
+            
+            if (!validatePassword(password)) {
+                showAlert('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // User created successfully
+                    const user = userCredential.user;
+                    showAlert('User added successfully!', 'success');
+                    console.log('User added:', user);
+                    
+                    // Clear form
+                    addUserForm.reset();
+                })
+                .catch((error) => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    showAlert(errorMessage, 'error');
+                    console.error('Add user error:', errorCode, errorMessage);
+                });
+        });
+
+        // Show admin panel for testing (you can remove this in production)
+        // This is just for demonstration - in a real app, you'd have proper admin authentication
+        setTimeout(() => {
+            adminPanel.style.display = 'block';
+        }, 3000);
+
+        // Sticky header
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.1)';
+            } else {
+                header.style.boxShadow = 'none';
+            }
+        });
+
+        // Check if user is already signed in
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // User is signed in
+                console.log('User is signed in:', user);
+                // You can redirect to main page if user is already signed in
+                // window.location.href = 'index.html';
+            } else {
+                // User is signed out
+                console.log('User is signed out');
+            }
+        });
+    </script>
+</body>
+</html>
